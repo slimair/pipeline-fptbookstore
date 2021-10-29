@@ -31,7 +31,7 @@ pipeline {
       stage('Setup environment') {
         steps {
           sh '''
-            cp backend_config/app_setting.json code/FptBookStore
+            cp backend_config/appsettings.json code/FptBookStore
           '''
         }
       }
