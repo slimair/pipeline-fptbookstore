@@ -10,6 +10,7 @@ RUN dotnet restore FptBookStore/FptBookStore.csproj
 
 COPY ./code .
 WORKDIR /src/FptBookStore   
+RUN dotnet tool install --global dotnet-ef
 RUN dotnet build "FptBookStore.csproj" -c Release -o /app
 RUN dotnet ef database update
 
