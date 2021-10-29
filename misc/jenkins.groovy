@@ -17,7 +17,7 @@ pipeline {
           echo 'Checking out process'
           dir('code') {
             script {
-              repo = checkout([$class: 'GitSCM', branches: [[name: 'main']],
+              repo = checkout([$class: 'GitSCM', branches: [[name: 'master']],
                   userRemoteConfigs: [[url: 'https://github.com/haicao2805/online-book-management']]])
                   GIT_COMMIT_SHORT = sh(
                       script: "printf \$(git rev-parse --short ${repo.GIT_COMMIT})",
