@@ -61,7 +61,7 @@ pipeline {
       stage('Run') {
         steps {
           sh """
-            docker run -d --rm --network MASA -p 8888:80 --name prndotnet tiendvlp/prndotnet:latest
+            docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA -p 8888:80 --name prndotnet tiendvlp/prndotnet:latest
           """
         }
       }
