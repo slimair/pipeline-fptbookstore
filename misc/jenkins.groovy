@@ -65,17 +65,24 @@ pipeline {
           """
         }
       }
-      // stage('Functional testing') {
-      //     steps {
-      //       sh 'docker run -t --rm -v "$(pwd)":/tmp/project katalonstudio/katalon katalonc.sh -projectPath=/tmp/project -browserType="Chrome" -retry=0 -statusDelay=15 -testSuitePath="Test Suites/TS_RegressionTest"'
-      //     }
-      //     post {
-      //       always {
-      //           archiveArtifacts artifacts: 'Reports/**/*.*', fingerprint: true
-      //           junit 'Reports/**/JUnit_Report.xml'
-      //       }
-      //     }
-      // }
+      stage('Functional testing') {
+          steps {
+            echo 'Checkout the Katalon automation test'
+            dir('katalon') {
+              script {
+                repo = checkout([$class: 'GitSCM', branches: [[name: 'main']],
+                    userRemoteConfigs: [[url: 'https://github.com/phuongnguyen521/SWT301-Katalon-FptBook']]])
+              }
+              sh 'docker run -t --rm -v "$(pwd)":/tmp/project katalonstudio/katalon katalonc.sh -projectPath=/tmp/project -browserType="Chrome" -retry=0 -statusDelay=15 -testSuitePath="Test Suites/TS_RegressionTest"'
+            }
+          }
+          post {
+            always {
+                archiveArtifacts artifacts: 'Reports/**/*.*', fingerprint: true
+                junit 'Reports/**/JUnit_Report.xml'
+            }
+          }
+      }
     }
     post {
       always {
