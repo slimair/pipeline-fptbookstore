@@ -67,6 +67,7 @@ pipeline {
       }
       stage('Functional testing') {
           steps {
+            sleep(time:15,unit:"SECONDS")
             echo 'Checkout the Katalon automation test'
             dir('katalon') {
               script {
@@ -74,14 +75,15 @@ pipeline {
                     userRemoteConfigs: [[url: 'https://github.com/slimair/fptbookstore-functional-testing']]])
               }
               sh 'docker-compose up'
-              // sh 'docker run -t -v "$(pwd)":/tmp/project katalonstudio/katalon katalonc.sh -projectPath=/tmp/project/ -browserType="Chrome" -retry=0 -statusDelay=15 -testSuitePath="Test Suites/TS_RegressionTest" -apiKey=ba490008-3999-4890-848b-b43048e5ca92'
             }
           }
       }
     }
     post {
       always {
-          // docker-compose down
+          dir ('katalon') {
+            sh 'docker-compose down'
+          }
           echo 'Clean up workspace'
           // cleanWs deleteDirs: true
       }
