@@ -82,13 +82,13 @@ pipeline {
       stage ('Functional testing') {
         steps {
           dir('katalon') {    
-              sh 'docker-compose up'
+              sh 'docker-compose up --build'
           }
         }
         post {
           always {
             dir ('katalon') {
-              //sh 'docker-compose down'
+              sh 'docker-compose down'
             }
           }
         }
