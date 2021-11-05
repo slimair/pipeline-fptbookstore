@@ -14,6 +14,7 @@ pipeline {
     stages {
       stage('Checkout') {
         steps {
+          cleanWs()
           echo 'Checking out process'
           dir('code') {
             script {
