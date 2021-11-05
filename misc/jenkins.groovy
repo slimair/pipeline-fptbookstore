@@ -87,7 +87,7 @@ pipeline {
         post {
           always {
             dir ('katalon') {
-              sh 'docker-compose down'
+              //sh 'docker-compose down'
             }
           }
         }
