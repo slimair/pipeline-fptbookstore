@@ -68,14 +68,14 @@ pipeline {
       stage('Functional testing') {
           steps {
             echo 'Waiting for project is fully up and running'
-            sleep(time:20,unit:"SECONDS")
+            sleep(time:25,unit:"SECONDS")
             echo 'Checkout the Katalon automation test'
             dir('katalon') {
               script {
                 repo = checkout([$class: 'GitSCM', branches: [[name: 'main']],
                     userRemoteConfigs: [[url: 'https://github.com/slimair/fptbookstore-functional-testing']]])
               }
-              sh 'docker-compose up --build'
+              sh 'docker-compose up'
             }
           }
       }
