@@ -45,7 +45,7 @@ pipeline {
             """
         }
       }
-      stage('Publish') {
+      stage('Publish image on docker hub') {
         steps {
           script {
               withDockerRegistry([credentialsId: 'docker-hub', url: '' ]) {
@@ -67,14 +67,15 @@ pipeline {
       }
       stage('Functional testing') {
           steps {
-            sleep(time:15,unit:"SECONDS")
+            echo 'Waiting for project is fully up and running'
+            sleep(time:20,unit:"SECONDS")
             echo 'Checkout the Katalon automation test'
             dir('katalon') {
               script {
                 repo = checkout([$class: 'GitSCM', branches: [[name: 'main']],
                     userRemoteConfigs: [[url: 'https://github.com/slimair/fptbookstore-functional-testing']]])
               }
-              sh 'docker-compose up'
+              sh 'docker-compose up --build'
             }
           }
       }
