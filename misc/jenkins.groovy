@@ -12,9 +12,14 @@ pipeline {
       buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '10', daysToKeepStr: '', numToKeepStr: '10')
     }
     stages {
+      stage('Setup') {
+            steps {
+                cleanWs()
+                checkout scm
+            }
+        }
       stage('Checkout') {
         steps {
-          cleanWs()
           echo 'Checking out process'
           dir('code') {
             script {
