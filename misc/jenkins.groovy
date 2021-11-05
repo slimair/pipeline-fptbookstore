@@ -73,7 +73,7 @@ pipeline {
                 repo = checkout([$class: 'GitSCM', branches: [[name: 'main']],
                     userRemoteConfigs: [[url: 'https://github.com/phuongnguyen521/SWT301-Katalon-FptBook']]])
               }
-              sh 'docker run -t --rm -v "$(pwd)":/tmp/project katalonstudio/katalon katalonc.sh -projectPath=/tmp/project/katalon -browserType="Chrome" -retry=0 -statusDelay=15 -testSuitePath="Test Suites/TS_RegressionTest" -apiKey=ba490008-3999-4890-848b-b43048e5ca92'
+              sh 'docker run -t -v "$(pwd)":/tmp/project katalonstudio/katalon katalonc.sh -projectPath=/tmp/project/katalon -browserType="Chrome" -retry=0 -statusDelay=15 -testSuitePath="Test Suites/TS_RegressionTest" -apiKey=ba490008-3999-4890-848b-b43048e5ca92'
             }
           }
       }
@@ -81,7 +81,7 @@ pipeline {
     post {
       always {
           echo 'Clean up workspace'
-          cleanWs deleteDirs: true
+          // cleanWs deleteDirs: true
       }
       changed {
           emailext subject: "Job \'${JOB_NAME}\' (${BUILD_NUMBER}) ${currentBuild.result}",
