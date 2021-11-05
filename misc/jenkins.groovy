@@ -65,7 +65,7 @@ pipeline {
           """
         }
       }
-      stage('Functional testing') {
+      stage('Checkout functional testing') {
           steps {
             echo 'Waiting for project is fully up and running'
             sleep(time:25,unit:"SECONDS")
@@ -75,16 +75,25 @@ pipeline {
                 repo = checkout([$class: 'GitSCM', branches: [[name: 'main']],
                     userRemoteConfigs: [[url: 'https://github.com/slimair/fptbookstore-functional-testing']]])
               }
-              sh 'docker-compose up'
             }
           }
       }
-    }
-    post {
-      always {
+      stage ('Functional testing') {
+        steps {
+          dir('katalon') {    
+              sh 'docker-compose up'
+          }
+        }
+        post {
           dir ('katalon') {
             sh 'docker-compose down'
           }
+        }
+      } 
+    }
+    post {
+      always {
+          
           echo 'Clean up workspace'
           // cleanWs deleteDirs: true
       }
