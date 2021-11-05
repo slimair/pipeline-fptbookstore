@@ -73,7 +73,9 @@ pipeline {
                 repo = checkout([$class: 'GitSCM', branches: [[name: 'main']],
                     userRemoteConfigs: [[url: 'https://github.com/phuongnguyen521/SWT301-Katalon-FptBook']]])
               }
-              sh 'docker run -t -v "$(pwd)":/tmp/project katalonstudio/katalon katalonc.sh -projectPath=/tmp/project/ -browserType="Chrome" -retry=0 -statusDelay=15 -testSuitePath="Test Suites/TS_RegressionTest" -apiKey=ba490008-3999-4890-848b-b43048e5ca92'
+              sh 'docker build -t tiendvlp/katalon .'
+              sh 'docker run tiendvlp/katalon'
+              // sh 'docker run -t -v "$(pwd)":/tmp/project katalonstudio/katalon katalonc.sh -projectPath=/tmp/project/ -browserType="Chrome" -retry=0 -statusDelay=15 -testSuitePath="Test Suites/TS_RegressionTest" -apiKey=ba490008-3999-4890-848b-b43048e5ca92'
             }
           }
       }
