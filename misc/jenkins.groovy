@@ -69,7 +69,15 @@ pipeline {
           }
         }
       }
-
+      stage ('Run test container') {
+        steps {
+            sh """
+              docker network create FptBook || true
+              docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA --name FptBookTest tiendvlp/prndotnet:latest
+              docker network connect FptBook FptBookTest
+            """
+        }
+      }
       stage('Checkout functional testing') {
           steps {
             echo 'Waiting for project is fully up and running'
@@ -93,7 +101,7 @@ pipeline {
             script {
               def katalonStudio = docker.image('katalonstudio/katalon');
               katalonStudio.pull();
-              katalonStudio.inside ("--network FptBook") {
+              katalonStudio.inside ("--network FptBook --rm") {
                 sh '''
                   cd katalon
                   katalonc.sh -projectPath=$(pwd)/fptbookstore_katalon.prj -browserType="Firefox" -retry=0 -statusDelay=15 -testSuitePath="Test Suites/FptBook_TestSuite" -apiKey=ba490008-3999-4890-848b-b43048e5ca92 --config -webui.autoUpdateDrivers=true --allowed-ips="137.184.131.91" --disable-dev-shm-usage  --no-sandbox
@@ -105,7 +113,7 @@ pipeline {
           always {
             sh '''
               docker stop FptBookTest || true
-              docker network rm FptBook
+              docker network rm FptBook || true
             '''
             dir ('katalon') {
                archiveArtifacts artifacts: 'Reports/**/*.*', fingerprint: true
