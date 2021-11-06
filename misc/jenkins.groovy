@@ -1,5 +1,5 @@
 def repo
-def discord_webhook = "https://discord.com/api/webhooks/906412530749022248/w-Bm0FuBFuz_q0r6IloYfBDB8MHlPcMg8UZMR86A-AUqVzx9UQ5dpBmAOOx5v6x3WSB4"
+def discord_webhook = "https://discord.com/api/webhooks/906416161237925938/oO7wfBXMZgAPYTUk-H1f2QOpQFw0uRBmjjG-zF1YSVEf1B7SyrSpuKQFYAGnYDeyyOQA"
 pipeline {
     agent any
     triggers {
