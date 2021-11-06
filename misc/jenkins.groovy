@@ -69,13 +69,21 @@ pipeline {
           }
         }
       }
-      stage ('Run test container') {
+      // stage ('Run test container') {
+      //   steps {
+      //       sh """
+      //         docker network create FptBook || true
+      //         docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA --name FptBookTest tiendvlp/prndotnet:latest
+      //         docker network connect FptBook FptBookTest
+      //       """
+      //   }
+      // }
+       stage('Run') {
         steps {
-            sh """
-              docker network create FptBook || true
-              docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA --name FptBookTest tiendvlp/prndotnet:latest
-              docker network connect FptBook FptBookTest
-            """
+          sh """
+            docker stop prndotnet || true
+            docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA -p 8888:80 --name prndotnet tiendvlp/prndotnet:latest
+          """
         }
       }
       stage('Checkout functional testing') {
@@ -117,14 +125,14 @@ pipeline {
           }
         }
       } 
-      stage('Run') {
-        steps {
-          sh """
-            docker stop prndotnet || true
-            docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA -p 8888:80 --name prndotnet tiendvlp/prndotnet:latest
-          """
-        }
-      }
+      // stage('Run') {
+      //   steps {
+      //     sh """
+      //       docker stop prndotnet || true
+      //       docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA -p 8888:80 --name prndotnet tiendvlp/prndotnet:latest
+      //     """
+      //   }
+      // }
     }
     post {
       always {
