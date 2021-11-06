@@ -93,11 +93,6 @@ pipeline {
       }
       stage ('Functional testing') {
         steps {
-            sh """
-              docker network create FptBook || true
-              docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA --name FptBookTest tiendvlp/prndotnet:latest
-              docker network connect FptBook FptBookTest
-            """
             script {
               def katalonStudio = docker.image('katalonstudio/katalon');
               katalonStudio.pull();
