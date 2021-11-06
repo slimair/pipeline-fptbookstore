@@ -69,23 +69,23 @@ pipeline {
           }
         }
       }
-      // stage ('Run test container') {
-      //   steps {
-      //       sh """
-      //         docker network create FptBook || true
-      //         docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA --name FptBookTest tiendvlp/prndotnet:latest
-      //         docker network connect FptBook FptBookTest
-      //       """
-      //   }
-      // }
-       stage('Run') {
+      stage ('Run test container') {
         steps {
-          sh """
-            docker stop prndotnet || true
-            docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA -p 8888:80 --name prndotnet tiendvlp/prndotnet:latest
-          """
+            sh """
+              docker network create FptBook || true
+              docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA --name FptBookTest tiendvlp/prndotnet:latest
+              docker network connect FptBook FptBookTest
+            """
         }
       }
+      //  stage('Run') {
+      //   steps {
+      //     sh """
+      //       docker stop prndotnet || true
+      //       docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA -p 8888:80 --name prndotnet tiendvlp/prndotnet:latest
+      //     """
+      //   }
+      // }
       stage('Checkout functional testing') {
           steps {
             echo 'Waiting for project is fully up and running'
@@ -114,10 +114,10 @@ pipeline {
         }
         post {
           always {
-            // sh '''
-              // docker stop FptBookTest || true
-              // docker network rm FptBook || true
-            // '''
+            sh '''
+              docker stop FptBookTest || true
+              docker network rm FptBook || true
+            '''
             dir ('katalon') {
                archiveArtifacts artifacts: 'Reports/**/*.*', fingerprint: true
                junit 'Reports/**/JUnit_Report.xml'
@@ -125,14 +125,14 @@ pipeline {
           }
         }
       } 
-      // stage('Run') {
-      //   steps {
-      //     sh """
-      //       docker stop prndotnet || true
-      //       docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA -p 8888:80 --name prndotnet tiendvlp/prndotnet:latest
-      //     """
-      //   }
-      // }
+      stage('Run') {
+        steps {
+          sh """
+            docker stop prndotnet || true
+            docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA -p 8888:80 --name prndotnet tiendvlp/prndotnet:latest
+          """
+        }
+      }
     }
     post {
       always {
