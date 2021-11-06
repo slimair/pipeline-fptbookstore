@@ -44,8 +44,7 @@ pipeline {
       stage('Build Image') {
         steps {
             sh """
-            docker stop prndotnet || true
-            docker rmi \$(docker images | grep 'tiendvlp/prndotnet') || true
+            docker rmi -f \$(docker images | grep 'tiendvlp/prndotnet') || true
             docker build -f misc/Dockerfile -t tiendvlp/prndotnet:${GIT_COMMIT_SHORT} .
             docker build -f misc/Dockerfile -t tiendvlp/prndotnet:latest .
             """
@@ -57,7 +56,7 @@ pipeline {
               withDockerRegistry([credentialsId: 'docker-hub', url: '' ]) {
                 sh """
                       docker push tiendvlp/prndotnet:${GIT_COMMIT_SHORT}
-                      docker rmi tiendvlp/prndotnet:${GIT_COMMIT_SHORT}
+                      docker rmi -f tiendvlp/prndotnet:${GIT_COMMIT_SHORT}
                       docker push tiendvlp/prndotnet:latest
                 """
               }
@@ -67,6 +66,7 @@ pipeline {
       stage('Run') {
         steps {
           sh """
+            docker stop prndotnet || true
             docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA -p 8888:80 --name prndotnet tiendvlp/prndotnet:latest
           """
         }
@@ -74,7 +74,7 @@ pipeline {
       stage('Checkout functional testing') {
           steps {
             echo 'Waiting for project is fully up and running'
-            sleep(time:25,unit:"SECONDS")
+            sleep(time:10,unit:"SECONDS")
             echo 'Checkout the Katalon automation test'
             dir('katalon') {
               script {
@@ -95,13 +95,13 @@ pipeline {
                   katalonc.sh -projectPath=$(pwd)/fptbookstore_katalon.prj -browserType="Firefox" -retry=0 -statusDelay=15 -testSuitePath="Test Suites/FptBook_TestSuite" -apiKey=ba490008-3999-4890-848b-b43048e5ca92 --config -webui.autoUpdateDrivers=true --allowed-ips="137.184.131.91" --disable-dev-shm-usage  --no-sandbox
                 '''
               }
-              sh 'docker-compose up --build'
           }
         }
         post {
           always {
             dir ('katalon') {
-              sh 'docker-compose down'
+               archiveArtifacts artifacts: 'Reports/**/*.*', fingerprint: true
+               junit 'Reports/**/JUnit_Report.xml'
             }
           }
         }
@@ -109,7 +109,6 @@ pipeline {
     }
     post {
       always {
-          
           echo 'Clean up workspace'
           // cleanWs deleteDirs: true
       }
