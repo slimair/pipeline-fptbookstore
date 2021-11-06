@@ -69,14 +69,7 @@ pipeline {
           }
         }
       }
-      stage('Run') {
-        steps {
-          sh """
-            docker stop prndotnet || true
-            docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA -p 8888:80 --name prndotnet tiendvlp/prndotnet:latest
-          """
-        }
-      }
+
       stage('Checkout functional testing') {
           steps {
             echo 'Waiting for project is fully up and running'
@@ -92,8 +85,11 @@ pipeline {
       }
       stage ('Functional testing') {
         steps {
+            sh """
+              docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network FptBook --name FptBookTest tiendvlp/prndotnet:latest
+            """
             script {
-              def katalonStudio = docker.image('katalonstudio/katalon');
+              def katalonStudio = docker.image('katalonstudio/katalon').withRun("--network FptBook");
               katalonStudio.pull();
               katalonStudio.inside {
                 sh '''
@@ -105,6 +101,9 @@ pipeline {
         }
         post {
           always {
+            sh '''
+              docker stop FptBookTest
+            '''
             dir ('katalon') {
                archiveArtifacts artifacts: 'Reports/**/*.*', fingerprint: true
                junit 'Reports/**/JUnit_Report.xml'
@@ -112,6 +111,14 @@ pipeline {
           }
         }
       } 
+      stage('Run') {
+        steps {
+          sh """
+            docker stop prndotnet || true
+            docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA -p 8888:80 --name prndotnet tiendvlp/prndotnet:latest
+          """
+        }
+      }
     }
     post {
       always {
