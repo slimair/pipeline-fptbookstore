@@ -86,7 +86,9 @@ pipeline {
       stage ('Functional testing') {
         steps {
             sh """
-              docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network FptBook --name FptBookTest tiendvlp/prndotnet:latest
+              docker network create FptBook
+              docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA --name FptBookTest tiendvlp/prndotnet:latest
+              docker network connect FptBook FptBookTest
             """
             script {
               def katalonStudio = docker.image('katalonstudio/katalon');
@@ -103,6 +105,7 @@ pipeline {
           always {
             sh '''
               docker stop FptBookTest || true
+              docker network rm FptBook
             '''
             dir ('katalon') {
                archiveArtifacts artifacts: 'Reports/**/*.*', fingerprint: true
