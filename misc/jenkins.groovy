@@ -114,10 +114,10 @@ pipeline {
         }
         post {
           always {
-            sh '''
-              docker stop FptBookTest || true
-              docker network rm FptBook || true
-            '''
+            // sh '''
+              // docker stop FptBookTest || true
+              // docker network rm FptBook || true
+            // '''
             dir ('katalon') {
                archiveArtifacts artifacts: 'Reports/**/*.*', fingerprint: true
                junit 'Reports/**/JUnit_Report.xml'
