@@ -1,9 +1,9 @@
 def repo
 pipeline {
     agent any
-    // triggers {
-        // pollSCM('* * * * *')
-    // }
+    triggers {
+        pollSCM('* * * * *')
+    }
     environment {
       VERSION = '0.1'
       GIT_COMMIT_SHORT = ''
