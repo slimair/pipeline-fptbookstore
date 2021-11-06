@@ -102,7 +102,7 @@ pipeline {
         post {
           always {
             sh '''
-              docker stop FptBookTest
+              docker stop FptBookTest || true
             '''
             dir ('katalon') {
                archiveArtifacts artifacts: 'Reports/**/*.*', fingerprint: true
