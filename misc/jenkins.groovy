@@ -1,4 +1,5 @@
 def repo
+def discord_webhook = "https://discord.com/api/webhooks/906412530749022248/w-Bm0FuBFuz_q0r6IloYfBDB8MHlPcMg8UZMR86A-AUqVzx9UQ5dpBmAOOx5v6x3WSB4"
 pipeline {
     agent any
     triggers {
@@ -110,6 +111,8 @@ pipeline {
     post {
       always {
           echo 'Clean up workspace'
+          discordSend description: "Jenkins Pipeline Build", footer: "CI/CD Slimair.co", link: BUILD_URL, result: currentBuild.result, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER}) ${currentBuild.result}", webhookURL: discord_webhook
+
           // cleanWs deleteDirs: true
       }
       changed {
