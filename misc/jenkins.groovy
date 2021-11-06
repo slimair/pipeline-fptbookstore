@@ -13,6 +13,11 @@ pipeline {
       buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '10', daysToKeepStr: '', numToKeepStr: '10')
     }
     stages {
+      stage('Notifi') {
+        steps {
+            discordSend description: "Jenkins Pipeline is starting", footer: "CI/CD Slimair.co", link: BUILD_URL, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER})", webhookURL: discord_webhook
+        }
+      }
       stage('Setup') {
             steps {
                 cleanWs()
@@ -112,7 +117,6 @@ pipeline {
       always {
           echo 'Clean up workspace'
           discordSend description: "Jenkins Pipeline Build", footer: "CI/CD Slimair.co", link: BUILD_URL, result: currentBuild.result, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER}) ${currentBuild.result}", webhookURL: discord_webhook
-
           // cleanWs deleteDirs: true
       }
       changed {
