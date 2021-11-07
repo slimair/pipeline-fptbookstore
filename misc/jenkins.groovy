@@ -162,7 +162,7 @@ pipeline {
                   keepAll: true,
                   reportDir: reportDir,
                   reportFiles: htmlFileName,
-                  reportName: 'FunctionalTestingReports',
+                  reportName: FUNCTION_TESTING_REPORT_FILE_NAME,
                   reportTitles: 'Function testing Reports']);
               }
           }
