@@ -17,20 +17,21 @@ pipeline {
       buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '10', daysToKeepStr: '', numToKeepStr: '10')
     }
     stages {
-      stage('Notifi') {
-        steps {
-            discordSend description: "Jenkins Pipeline is starting", footer: "CI/CD Slimair.co", link: BUILD_URL, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER})", webhookURL: DISCORD_WEBHOOK
-        }
-      }
       stage('Prepare') {
           steps {
+              echo 'Send message to Discord to tell that the pipeline is starting'
+              discordSend description: "Jenkins Pipeline is starting", footer: "CI/CD Slimair.co", result: currentBuild.result, link: BUILD_URL, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER})", webhookURL: DISCORD_WEBHOOK
               cleanWs()
           }
       }
-      stage('Checkout') {
+      stage ('Checkout the Pipeline') {
+        steps {
+          checkout scm
+        }
+      }
+      stage('Checkout the FptBook project') {
         steps {
           echo 'Checking out process'
-          checkout scm
           // clone the project and put it to the code folder
           dir('code') {
             script {
@@ -56,7 +57,6 @@ pipeline {
       stage('Build Image') {
         steps {
             sh """
-            docker rmi -f \$(docker images | grep 'tiendvlp/prndotnet') || true
             docker build -f misc/Dockerfile -t tiendvlp/prndotnet:${GIT_COMMIT_SHORT} .
             docker build -f misc/Dockerfile -t tiendvlp/prndotnet:latest .
             """
@@ -68,10 +68,16 @@ pipeline {
               withDockerRegistry([credentialsId: 'docker-hub', url: '' ]) {
                 sh """
                       docker push tiendvlp/prndotnet:${GIT_COMMIT_SHORT}
-                      docker rmi -f tiendvlp/prndotnet:${GIT_COMMIT_SHORT}
                       docker push tiendvlp/prndotnet:latest
                 """
               }
+          }
+        }
+        post {
+          always {
+            sh """
+              docker rmi -f tiendvlp/prndotnet:${GIT_COMMIT_SHORT}
+            """
           }
         }
       }
@@ -84,7 +90,7 @@ pipeline {
             """
         }
       }
-      stage('Checkout functional testing') {
+      stage('Checkout code test') {
           steps {
             echo 'Waiting for project is fully up and running'
             sleep(time:4,unit:"SECONDS")
@@ -97,7 +103,7 @@ pipeline {
             }
           }
       }
-      stage ('Functional testing') {
+      stage ('Start function testing process') {
         steps {
             script {
                 def katalonStudio = docker.image('katalonstudio/katalon');
@@ -134,11 +140,10 @@ pipeline {
     }
     post {
       always {
-          echo 'Clean up workspace'
           discordSend description: "Jenkins Pipeline Build", footer: "CI/CD Slimair.co", link: BUILD_URL, result: currentBuild.result, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER}) ${currentBuild.result}", webhookURL: DISCORD_WEBHOOK
-          // cleanWs deleteDirs: true
       }
       changed {
+          // Only send email if the result is different from the previous build
           emailext subject: "Job \'${JOB_NAME}\' (${BUILD_NUMBER}) ${currentBuild.result}",
                 body: "Please go to ${BUILD_URL} and verify it.", 
                 attachLog: true, 
