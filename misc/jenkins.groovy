@@ -107,6 +107,18 @@ pipeline {
             dir ('katalon') {
                archiveArtifacts artifacts: 'Reports/**/*.*', fingerprint: true
                junit 'Reports/**/JUnit_Report.xml'
+               script {
+                  def file = findFiles(glob: '**/*.html')[0];
+                  def reportDir = file.getPath().substring(0, file.getPath().lastIndexOf('/'));
+                  def htmlPath = file.getPath();
+                  publishHTML (target : [allowMissing: false,
+                  alwaysLinkToLastBuild: true,
+                  keepAll: true,
+                  reportDir: file.getPath().substring(0, file.getPath().lastIndexOf('/')),
+                  reportFiles: file.getName(),
+                  reportName: 'My Reports',
+                  reportTitles: 'The Report']);
+              }
             }
           }
         }
@@ -141,20 +153,7 @@ pipeline {
     }
     post {
       always {
-          dir ('katalon/Reports') {
-            script {
-              def file = findFiles(glob: '**/*.html')[0];
-              def reportDir = file.getPath().substring(0, file.getPath().lastIndexOf('/'));
-              def htmlPath = file.getPath();
-              publishHTML (target : [allowMissing: false,
-              alwaysLinkToLastBuild: true,
-              keepAll: true,
-              reportDir: file.getPath().substring(0, file.getPath().lastIndexOf('/')),
-              reportFiles: file.getName(),
-              reportName: 'My Reports',
-              reportTitles: 'The Report']);
-            }
-          }
+          
           discordSend description: "Jenkins Pipeline Build", footer: "CI/CD Slimair.co", link: BUILD_URL, result: currentBuild.result, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER}) ${currentBuild.result}", webhookURL: DISCORD_WEBHOOK
       }
       changed {
