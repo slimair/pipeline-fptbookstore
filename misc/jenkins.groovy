@@ -99,7 +99,7 @@ pipeline {
               katalonStudio.inside ("--network FptBook") {
                 sh '''
                   cd katalon
-                  katalonc.sh -projectPath=$(pwd)/fptbookstore_katalon.prj -browserType="Firefox" -retry=0 -statusDelay=15 -testSuitePath="Test Suites/FptBook_TestSuite" -apiKey=ba490008-3999-4890-848b-b43048e5ca92 --config -webui.autoUpdateDrivers=true --allowed-ips="137.184.131.91" --disable-dev-shm-usage  --no-sandbox
+                  katalonc.sh -projectPath=$(pwd)/fptbookstore_katalon.prj -browserType="Firefox" -retry=0 -statusDelay=15 -testSuitePath="Test Suites/FptBook_TestSuite" -apiKey=167a8fd0-cff6-4f5a-a67a-269c797850e1 --config -webui.autoUpdateDrivers=true --allowed-ips="137.184.131.91" --disable-dev-shm-usage  --no-sandbox
                 '''
               }
           }
