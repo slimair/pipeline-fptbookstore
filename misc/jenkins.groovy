@@ -30,7 +30,7 @@ pipeline {
       stage('Checkout') {
         steps {
           echo 'Checking out process'
-          // checkout scm
+          checkout scm
           // clone the project and put it to the code folder
           dir('code') {
             script {
