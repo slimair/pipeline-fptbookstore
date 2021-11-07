@@ -1,12 +1,12 @@
 def repo
-def discord_webhook = "https://discord.com/api/webhooks/906416161237925938/oO7wfBXMZgAPYTUk-H1f2QOpQFw0uRBmjjG-zF1YSVEf1B7SyrSpuKQFYAGnYDeyyOQA"
 pipeline {
     agent any
     triggers {
         pollSCM('* * * * *')
     }
     environment {
-      VERSION = '0.1'
+      DISCORD_WEBHOOK = credentials('discord-fptbook-webhook')
+      KATALON_API_KEY = credentials('katalon-api-key')
       GIT_COMMIT_SHORT = ''
     }
     options {
@@ -15,7 +15,7 @@ pipeline {
     stages {
       stage('Notifi') {
         steps {
-            discordSend description: "Jenkins Pipeline is starting", footer: "CI/CD Slimair.co", link: BUILD_URL, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER})", webhookURL: discord_webhook
+            discordSend description: "Jenkins Pipeline is starting", footer: "CI/CD Slimair.co", link: BUILD_URL, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER})", webhookURL: DISCORD_WEBHOOK
         }
       }
       stage('Setup') {
@@ -97,10 +97,10 @@ pipeline {
               def katalonStudio = docker.image('katalonstudio/katalon');
               katalonStudio.pull();
               katalonStudio.inside ("--network FptBook") {
-                sh '''
+                sh """
                   cd katalon
-                  katalonc.sh -projectPath=$(pwd)/fptbookstore_katalon.prj -browserType="Firefox" -retry=0 -statusDelay=15 -testSuitePath="Test Suites/FptBook_TestSuite" -apiKey=167a8fd0-cff6-4f5a-a67a-269c797850e1 --config -webui.autoUpdateDrivers=true --allowed-ips="137.184.131.91" --disable-dev-shm-usage  --no-sandbox
-                '''
+                  katalonc.sh -projectPath=$(pwd)/fptbookstore_katalon.prj -browserType="Firefox" -retry=0 -statusDelay=15 -testSuitePath="Test Suites/FptBook_TestSuite" -apiKey=${KATALON_API_KEY} --config -webui.autoUpdateDrivers=true --allowed-ips="137.184.131.91" --disable-dev-shm-usage  --no-sandbox
+                """
               }
           }
         }
@@ -129,7 +129,7 @@ pipeline {
     post {
       always {
           echo 'Clean up workspace'
-          discordSend description: "Jenkins Pipeline Build", footer: "CI/CD Slimair.co", link: BUILD_URL, result: currentBuild.result, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER}) ${currentBuild.result}", webhookURL: discord_webhook
+          discordSend description: "Jenkins Pipeline Build", footer: "CI/CD Slimair.co", link: BUILD_URL, result: currentBuild.result, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER}) ${currentBuild.result}", webhookURL: DISCORD_WEBHOOK
           // cleanWs deleteDirs: true
       }
       changed {
