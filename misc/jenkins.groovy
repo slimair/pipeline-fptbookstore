@@ -21,7 +21,7 @@ pipeline {
       stage('Prepare') {
           steps {
               cleanWs()
-              echo 'Send message to Discord to tell that the pipeline is starting'
+              echo 'Send message to Discord to tell that the pipeline has been started'
               discordSend description: "Jenkins Pipeline is starting", footer: "CI/CD Slimair.co", result: currentBuild.result, link: BUILD_URL, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER})", webhookURL: DISCORD_WEBHOOK
           }
       }
@@ -145,6 +145,9 @@ pipeline {
         echo 'Publish the Katalon report file'
         dir ('katalon') {
           script {
+            /*
+            * Read the reports folder and publish the report file (html file)
+            */
             def files = findFiles(glob: '**/*.html');
               if (files.length > 0) {
                 def file = files[0];
