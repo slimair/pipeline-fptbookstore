@@ -62,25 +62,6 @@ pipeline {
             """
         }
       }
-      stage('Publish image on docker hub') {
-        steps {
-          script {
-              withDockerRegistry([credentialsId: 'docker-hub', url: '' ]) {
-                sh """
-                      docker push tiendvlp/prndotnet:${GIT_COMMIT_SHORT}
-                      docker push tiendvlp/prndotnet:latest
-                """
-              }
-          }
-        }
-        post {
-          always {
-            sh """
-              docker rmi -f tiendvlp/prndotnet:${GIT_COMMIT_SHORT}
-            """
-          }
-        }
-      }
       stage ('Run test container') {
         steps {
             sh """
@@ -129,7 +110,26 @@ pipeline {
             }
           }
         }
-      } 
+      }
+      stage('Publish image on docker hub') {
+        steps {
+          script {
+              withDockerRegistry([credentialsId: 'docker-hub', url: '' ]) {
+                sh """
+                      docker push tiendvlp/prndotnet:${GIT_COMMIT_SHORT}
+                      docker push tiendvlp/prndotnet:latest
+                """
+              }
+          }
+        }
+        post {
+          always {
+            sh """
+              docker rmi -f tiendvlp/prndotnet:${GIT_COMMIT_SHORT}
+            """
+          }
+        }
+      }
       stage('Run') {
         steps {
           sh """
