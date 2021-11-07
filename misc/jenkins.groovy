@@ -2,14 +2,18 @@ def repo
 pipeline {
     agent any
     triggers {
+        // check every minutes
         pollSCM('* * * * *')
     }
     environment {
+      // Replace the credentials with your webhook url, and Katalon api key
       DISCORD_WEBHOOK = credentials('discord-fptbook-webhook')
       KATALON_API_KEY = credentials('katalon-api-key')
+      APPSETTINGS_FILE_PATH = credentials('fptbook-appsetting');
       GIT_COMMIT_SHORT = ''
     }
     options {
+      // maximum 10 artifacts to be kept
       buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '10', daysToKeepStr: '', numToKeepStr: '10')
     }
     stages {
@@ -18,19 +22,21 @@ pipeline {
             discordSend description: "Jenkins Pipeline is starting", footer: "CI/CD Slimair.co", link: BUILD_URL, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER})", webhookURL: DISCORD_WEBHOOK
         }
       }
-      stage('Setup') {
-            steps {
-                cleanWs()
-                checkout scm
-            }
-        }
+      stage('Prepare') {
+          steps {
+              cleanWs()
+          }
+      }
       stage('Checkout') {
         steps {
           echo 'Checking out process'
+          // checkout scm
+          // clone the project and put it to the code folder
           dir('code') {
             script {
               repo = checkout([$class: 'GitSCM', branches: [[name: 'master']],
                   userRemoteConfigs: [[url: 'https://github.com/haicao2805/online-book-management']]])
+                  // get the short commit id
                   GIT_COMMIT_SHORT = sh(
                       script: "printf \$(git rev-parse --short ${repo.GIT_COMMIT})",
                       returnStdout: true
@@ -42,9 +48,9 @@ pipeline {
       }
       stage('Setup environment') {
         steps {
-          sh '''
-            cp backend_config/appsettings.json code/FptBookStore
-          '''
+          sh """
+            cp ${APPSETTINGS_FILE_PATH} code/FptBookStore
+          """
         }
       }
       stage('Build Image') {
