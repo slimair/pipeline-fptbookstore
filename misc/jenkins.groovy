@@ -94,14 +94,14 @@ pipeline {
       stage ('Functional testing') {
         steps {
             script {
-              def katalonStudio = docker.image('katalonstudio/katalon');
-              katalonStudio.pull();
-              katalonStudio.inside ("--network FptBook") {
-                sh """
-                  cd katalon
-                  katalonc.sh -projectPath=$(pwd)/fptbookstore_katalon.prj -browserType="Firefox" -retry=0 -statusDelay=15 -testSuitePath="Test Suites/FptBook_TestSuite" -apiKey=${KATALON_API_KEY} --config -webui.autoUpdateDrivers=true --allowed-ips="137.184.131.91" --disable-dev-shm-usage  --no-sandbox
-                """
-              }
+                def katalonStudio = docker.image('katalonstudio/katalon');
+                katalonStudio.pull();
+                katalonStudio.inside ("--network FptBook") {
+            }
+            sh """
+              cd katalon
+              katalonc.sh -projectPath=\$(pwd)/fptbookstore_katalon.prj -browserType='Firefox' -retry=0 -statusDelay=15 -testSuitePath='Test Suites/FptBook_TestSuite' -apiKey=${KATALON_API_KEY} --config -webui.autoUpdateDrivers=true --allowed-ips='137.184.131.91' --disable-dev-shm-usage  --no-sandbox
+            """
           }
         }
         post {
