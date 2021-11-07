@@ -19,9 +19,9 @@ pipeline {
     stages {
       stage('Prepare') {
           steps {
+              cleanWs()
               echo 'Send message to Discord to tell that the pipeline is starting'
               discordSend description: "Jenkins Pipeline is starting", footer: "CI/CD Slimair.co", result: currentBuild.result, link: BUILD_URL, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER})", webhookURL: DISCORD_WEBHOOK
-              cleanWs()
           }
       }
       stage ('Checkout the Pipeline') {
@@ -141,6 +141,20 @@ pipeline {
     }
     post {
       always {
+          dir ('katalon/Reports') {
+            script {
+              def file = findFiles(glob: '**/*.html')[0];
+              def reportDir = file.getPath().substring(0, file.getPath().lastIndexOf('/'));
+              def htmlPath = file.getPath();
+              publishHTML (target : [allowMissing: false,
+              alwaysLinkToLastBuild: true,
+              keepAll: true,
+              reportDir: file.getPath().substring(0, file.getPath().lastIndexOf('/')),
+              reportFiles: file.getName(),
+              reportName: 'My Reports',
+              reportTitles: 'The Report']);
+            }
+          }
           discordSend description: "Jenkins Pipeline Build", footer: "CI/CD Slimair.co", link: BUILD_URL, result: currentBuild.result, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER}) ${currentBuild.result}", webhookURL: DISCORD_WEBHOOK
       }
       changed {
