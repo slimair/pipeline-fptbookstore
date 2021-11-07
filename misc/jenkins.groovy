@@ -1,4 +1,5 @@
 def repo
+def FUNCTION_TESTING_REPORT_FILE_NAME = 'FunctionalTestingReports'
 pipeline {
     agent any
     triggers {
@@ -84,7 +85,7 @@ pipeline {
             }
           }
       }
-      stage ('Start function testing process') {
+      stage ('Start functional testing process') {
         steps {
             script {
                 def katalonStudio = docker.image('katalonstudio/katalon');
@@ -108,16 +109,23 @@ pipeline {
                archiveArtifacts artifacts: 'Reports/**/*.*', fingerprint: true
                junit 'Reports/**/JUnit_Report.xml'
                script {
-                  def file = findFiles(glob: '**/*.html')[0];
-                  def reportDir = file.getPath().substring(0, file.getPath().lastIndexOf('/'));
-                  def htmlPath = file.getPath();
-                  publishHTML (target : [allowMissing: false,
-                  alwaysLinkToLastBuild: true,
-                  keepAll: true,
-                  reportDir: file.getPath().substring(0, file.getPath().lastIndexOf('/')),
-                  reportFiles: file.getName(),
-                  reportName: 'My Reports',
-                  reportTitles: 'The Report']);
+                  def files = findFiles(glob: '**/*.html');
+                  if (files.length > 0) {
+                    def file = files[0];
+                    def reportDir = file.getPath().substring(0, file.getPath().lastIndexOf('/'));
+                    def htmlFileName = file.getName();
+                    sh """
+                      echo 'ReportDir: ${reportDir}'
+                      echo 'ReportFile: ${htmlFileName}' 
+                    """
+                    publishHTML (target : [allowMissing: false,
+                      alwaysLinkToLastBuild: true,
+                      keepAll: true,
+                      reportDir: reportDir,
+                      reportFiles: htmlFileName,
+                      reportName: FUNCTION_TESTING_REPORT_FILE_NAME,
+                      reportTitles: 'Function testing Reports']);
+                  }
               }
             }
           }
@@ -153,9 +161,38 @@ pipeline {
     }
     post {
       always {
-          
-          discordSend description: "Jenkins Pipeline Build", footer: "CI/CD Slimair.co", link: BUILD_URL, result: currentBuild.result, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER}) ${currentBuild.result}", webhookURL: DISCORD_WEBHOOK
+        echo 'Publish the Katalon report file'
+        dir ('katalon') {
+          script {
+            def files = findFiles(glob: '**/*.html');
+              if (files.length > 0) {
+                def file = files[0];
+                def reportDir = file.getPath().substring(0, file.getPath().lastIndexOf('/'));
+                def htmlFileName = file.getName();
+                sh """
+                  echo 'ReportDir: ${reportDir}'
+                  echo 'ReportFile: ${htmlFileName}' 
+                """
+                publishHTML (target : [allowMissing: false,
+                  alwaysLinkToLastBuild: true,
+                  keepAll: true,
+                  reportDir: reportDir,
+                  reportFiles: htmlFileName,
+                  reportName: 'FunctionalTestingReports',
+                  reportTitles: 'Function testing Reports']);
+              }
+          }
       }
+            discordSend (
+              description: """
+              Jenkins Pipeline build result: 
+              Functional testing reports: ${JOB_URL}/FUNCTION_TESTING_REPORT_FILE_NAME""",
+              footer: "CI/CD Slimair.co",
+              link: BUILD_URL,
+              result: currentBuild.result, 
+              title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER}) ${currentBuild.result}", 
+              webhookURL: DISCORD_WEBHOOK)
+    }
       changed {
           // Only send email if the result is different from the previous build
           emailext subject: "Job \'${JOB_NAME}\' (${BUILD_NUMBER}) ${currentBuild.result}",
