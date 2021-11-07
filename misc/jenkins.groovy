@@ -108,25 +108,6 @@ pipeline {
             dir ('katalon') {
                archiveArtifacts artifacts: 'Reports/**/*.*', fingerprint: true
                junit 'Reports/**/JUnit_Report.xml'
-               script {
-                  def files = findFiles(glob: '**/*.html');
-                  if (files.length > 0) {
-                    def file = files[0];
-                    def reportDir = file.getPath().substring(0, file.getPath().lastIndexOf('/'));
-                    def htmlFileName = file.getName();
-                    sh """
-                      echo 'ReportDir: ${reportDir}'
-                      echo 'ReportFile: ${htmlFileName}' 
-                    """
-                    publishHTML (target : [allowMissing: false,
-                      alwaysLinkToLastBuild: true,
-                      keepAll: true,
-                      reportDir: reportDir,
-                      reportFiles: htmlFileName,
-                      reportName: FUNCTION_TESTING_REPORT_FILE_NAME,
-                      reportTitles: 'Function testing Reports']);
-                  }
-              }
             }
           }
         }
@@ -186,7 +167,7 @@ pipeline {
             discordSend (
               description: """
               Jenkins Pipeline build result: 
-              Functional testing reports: ${JOB_URL}/FUNCTION_TESTING_REPORT_FILE_NAME""",
+              Functional testing reports: ${JOB_URL}/${FUNCTION_TESTING_REPORT_FILE_NAME}""",
               footer: "CI/CD Slimair.co",
               link: BUILD_URL,
               result: currentBuild.result, 
