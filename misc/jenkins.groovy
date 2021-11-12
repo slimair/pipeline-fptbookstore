@@ -135,7 +135,7 @@ pipeline {
         steps {
           sh """
             docker rm -f prndotnet || true
-            docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA -p 8888:80 --name prndotnet tiendvlp/prndotnet:latest
+            docker run -d -v '/FptBook/image:/app/wwwroot/image' --network MASA -p 8888:80 --name prndotnet tiendvlp/prndotnet:latest
           """
         }
       }
