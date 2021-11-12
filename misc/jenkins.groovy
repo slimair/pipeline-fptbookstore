@@ -63,55 +63,55 @@ pipeline {
             """
         }
       }
-      stage ('Run test container') {
-        steps {
-            sh """
-              docker network create FptBook || true
-              docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA --name FptBookTest tiendvlp/prndotnet:latest
-              docker network connect FptBook FptBookTest
-            """
-        }
-      }
-      stage('Checkout code test') {
-          steps {
-            echo 'Waiting for project is fully up and running'
-            sleep(time:4,unit:"SECONDS")
-            echo 'Checkout the Katalon automation test'
-            dir('katalon') {
-              script {
-                repo = checkout([$class: 'GitSCM', branches: [[name: 'main']],
-                    userRemoteConfigs: [[url: 'https://github.com/slimair/fptbookstore-functional-testing']]])
-              }
-            }
-          }
-      }
-      stage ('Start functional testing process') {
-        steps {
-            script {
-                def katalonStudio = docker.image('katalonstudio/katalon');
-                katalonStudio.pull();
-                katalonStudio.inside ("--network FptBook --name KatalonStudio") {
-                sh """
-                  cd katalon
-                  katalonc.sh -projectPath=\$(pwd)/fptbookstore_katalon.prj -browserType='Firefox' -retry=0 -statusDelay=15 -testSuitePath='Test Suites/FptBook_TestSuite' -apiKey=${KATALON_API_KEY} --config -webui.autoUpdateDrivers=true --allowed-ips='137.184.131.91' --disable-dev-shm-usage  --no-sandbox
-                """
-            }
-          }
-        }
-        post {
-          always {
-            sh '''
-              docker rm -f KatalonStudio || true
-              docker rm -f FptBookTest || true
-              docker network rm FptBook || true
-            '''
-            dir ('katalon') {
-               archiveArtifacts artifacts: 'Reports/**/*.*', fingerprint: true
-               junit 'Reports/**/JUnit_Report.xml'
-            }
-          }
-        }
-      }
+//       stage ('Run test container') {
+//         steps {
+//             sh """
+//               docker network create FptBook || true
+//               docker run -d --rm -v '/FptBook/image:/app/wwwroot/image' --network MASA --name FptBookTest tiendvlp/prndotnet:latest
+//               docker network connect FptBook FptBookTest
+//             """
+//         }
+//       }
+//       stage('Checkout code test') {
+//           steps {
+//             echo 'Waiting for project is fully up and running'
+//             sleep(time:4,unit:"SECONDS")
+//             echo 'Checkout the Katalon automation test'
+//             dir('katalon') {
+//               script {
+//                 repo = checkout([$class: 'GitSCM', branches: [[name: 'main']],
+//                     userRemoteConfigs: [[url: 'https://github.com/slimair/fptbookstore-functional-testing']]])
+//               }
+//             }
+//           }
+//       }
+//       stage ('Start functional testing process') {
+//         steps {
+//             script {
+//                 def katalonStudio = docker.image('katalonstudio/katalon');
+//                 katalonStudio.pull();
+//                 katalonStudio.inside ("--network FptBook --name KatalonStudio") {
+//                 sh """
+//                   cd katalon
+//                   katalonc.sh -projectPath=\$(pwd)/fptbookstore_katalon.prj -browserType='Firefox' -retry=0 -statusDelay=15 -testSuitePath='Test Suites/FptBook_TestSuite' -apiKey=${KATALON_API_KEY} --config -webui.autoUpdateDrivers=true --allowed-ips='137.184.131.91' --disable-dev-shm-usage  --no-sandbox
+//                 """
+//             }
+//           }
+//         }
+//         post {
+//           always {
+//             sh '''
+//               docker rm -f KatalonStudio || true
+//               docker rm -f FptBookTest || true
+//               docker network rm FptBook || true
+//             '''
+//             dir ('katalon') {
+//                archiveArtifacts artifacts: 'Reports/**/*.*', fingerprint: true
+//                junit 'Reports/**/JUnit_Report.xml'
+//             }
+//           }
+//         }
+//       }
       stage('Publish image on docker hub') {
         steps {
           script {
@@ -141,42 +141,42 @@ pipeline {
       }
     }
     post {
-      always {
-        echo 'Publish the Katalon report file'
-        dir ('katalon') {
-          script {
-            /*
-            * Read the reports folder and publish the report file (html file)
-            */
-            def files = findFiles(glob: '**/*.html');
-              if (files.length > 0) {
-                def file = files[0];
-                def reportDir = file.getPath().substring(0, file.getPath().lastIndexOf('/'));
-                def htmlFileName = file.getName();
-                sh """
-                  echo 'ReportDir: ${reportDir}'
-                  echo 'ReportFile: ${htmlFileName}' 
-                """
-                publishHTML (target : [allowMissing: false,
-                  alwaysLinkToLastBuild: true,
-                  keepAll: true,
-                  reportDir: reportDir,
-                  reportFiles: htmlFileName,
-                  reportName: FUNCTION_TESTING_REPORT_FILE_NAME,
-                  reportTitles: 'Function testing Reports']);
-              }
-          }
-      }
-            discordSend (
-              description: """
-              Jenkins Pipeline build result: 
-              Functional testing reports: ${JOB_URL}/${FUNCTION_TESTING_REPORT_FILE_NAME}""",
-              footer: "CI/CD Slimair.co",
-              link: BUILD_URL,
-              result: currentBuild.result, 
-              title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER}) ${currentBuild.result}", 
-              webhookURL: DISCORD_WEBHOOK)
-    }
+//       always {
+//         echo 'Publish the Katalon report file'
+//         dir ('katalon') {
+//           script {
+//             /*
+//             * Read the reports folder and publish the report file (html file)
+//             */
+//             def files = findFiles(glob: '**/*.html');
+//               if (files.length > 0) {
+//                 def file = files[0];
+//                 def reportDir = file.getPath().substring(0, file.getPath().lastIndexOf('/'));
+//                 def htmlFileName = file.getName();
+//                 sh """
+//                   echo 'ReportDir: ${reportDir}'
+//                   echo 'ReportFile: ${htmlFileName}' 
+//                 """
+//                 publishHTML (target : [allowMissing: false,
+//                   alwaysLinkToLastBuild: true,
+//                   keepAll: true,
+//                   reportDir: reportDir,
+//                   reportFiles: htmlFileName,
+//                   reportName: FUNCTION_TESTING_REPORT_FILE_NAME,
+//                   reportTitles: 'Function testing Reports']);
+//               }
+//           }
+//       }
+//             discordSend (
+//               description: """
+//               Jenkins Pipeline build result: 
+//               Functional testing reports: ${JOB_URL}/${FUNCTION_TESTING_REPORT_FILE_NAME}""",
+//               footer: "CI/CD Slimair.co",
+//               link: BUILD_URL,
+//               result: currentBuild.result, 
+//               title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER}) ${currentBuild.result}", 
+//               webhookURL: DISCORD_WEBHOOK)
+//     }
       changed {
           // Only send email if the result is different from the previous build
           emailext subject: "Job \'${JOB_NAME}\' (${BUILD_NUMBER}) ${currentBuild.result}",
