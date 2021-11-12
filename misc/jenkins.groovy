@@ -22,7 +22,7 @@ pipeline {
           steps {
               cleanWs()
               echo 'Send message to Discord to tell that the pipeline has been started'
-              discordSend description: "Jenkins Pipeline is starting", footer: "CI/CD Slimair.co", result: currentBuild.result, link: BUILD_URL, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER})", webhookURL: DISCORD_WEBHOOK
+//               discordSend description: "Jenkins Pipeline is starting", footer: "CI/CD Slimair.co", result: currentBuild.result, link: BUILD_URL, title: "Job \'${JOB_NAME}\' (${BUILD_NUMBER})", webhookURL: DISCORD_WEBHOOK
           }
       }
       stage ('Checkout the Pipeline') {
